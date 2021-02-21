@@ -1,7 +1,0 @@
-.git/
-.idea/
-docker-compose.yml
-docker/
-Dockerfile
-.ruby-gemset
-.ruby-version
