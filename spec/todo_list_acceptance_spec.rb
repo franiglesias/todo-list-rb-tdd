@@ -7,12 +7,13 @@ require 'rspec'
 require 'rack/test'
 require 'json'
 
-require_relative '../src/infrastructure/entry_point/todo_list_app.rb'
+require_relative '../src/infrastructure/entry_point/todo_list_app'
+require_relative '../src/infrastructure/persistence/memory_storage'
 require_relative '../src/domain/task_repository'
 require_relative '../src/domain/task'
 
 def todo_application
-  @task_repository = double(TaskRepository)
+  @task_repository = TaskRepository.new MemoryStorage.new
   @add_task_handler = AddTaskHandler.new @task_repository
   TodoListApp.new @add_task_handler
 end
@@ -40,20 +41,11 @@ RSpec.describe 'As a user I want to' do
 
   it "add a new task to the list" do
 
-    task = Task.new 1, 'Write a test that fails'
-
-    allow(@task_repository)
-      .to receive(:next_id)
-            .and_return(1)
-
-    expect(@task_repository)
-      .to receive(:store)
-            .with(has_same_data(task))
-
     @client.post '/api/todo',
                  { task: 'Write a test that fails' }.to_json,
                  { 'CONTENT_TYPE' => 'application/json' }
 
     expect(@client.last_response.status).to eq(201)
+    expect(@task_repository.next_id).to eq(2)
   end
 end
