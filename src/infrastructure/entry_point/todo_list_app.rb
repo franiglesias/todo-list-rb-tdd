@@ -1,17 +1,20 @@
-# frozen_string_literal: true
+  # frozen_string_literal: true
 
-require 'sinatra'
-require_relative '../../domain/task'
-require_relative '../../domain/task_repository'
+  require 'sinatra'
+  require_relative '../../domain/task'
+  require_relative '../../domain/task_repository'
+  require_relative '../../application/add_task_handler'
 
-class TodoListApp < Sinatra::Base
-  def initialize(task_repository)
-    @task_repository = task_repository
+  class TodoListApp < Sinatra::Base
+    def initialize(add_task_handler)
+      @add_task_handler = add_task_handler
+    end
+
+    post '/api/todo' do
+      payload = JSON.parse request.body.read.to_s
+
+      @add_task_handler.execute payload['task']
+
+      [201]
+    end
   end
-
-  post '/api/todo' do
-    task = Task.new
-    @task_repository.store(task)
-    [201]
-  end
-end

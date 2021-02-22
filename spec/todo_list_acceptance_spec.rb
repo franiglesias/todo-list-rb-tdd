@@ -5,6 +5,7 @@ ENV['APP_ENV'] = 'test'
 
 require 'rspec'
 require 'rack/test'
+require 'json'
 
 require_relative '../src/infrastructure/entry_point/todo_list_app.rb'
 require_relative '../src/domain/task_repository'
@@ -12,8 +13,8 @@ require_relative '../src/domain/task'
 
 def todo_application
   @task_repository = double(TaskRepository)
-
-  TodoListApp.new @task_repository
+  @add_task_handler = AddTaskHandler.new @task_repository
+  TodoListApp.new @add_task_handler
 end
 
 def build_client
@@ -24,6 +25,13 @@ def build_client
   )
 end
 
+RSpec::Matchers.define :has_same_data do |expected|
+  match do |actual|
+    expected.id == actual.id && expected.description == actual.description
+  end
+end
+
+
 RSpec.describe 'As a user I want to' do
 
   before do
@@ -32,12 +40,18 @@ RSpec.describe 'As a user I want to' do
 
   it "add a new task to the list" do
 
+    task = Task.new 1, 'Write a test that fails'
+
+    allow(@task_repository)
+      .to receive(:next_id)
+            .and_return(1)
+
     expect(@task_repository)
       .to receive(:store)
-            .with(instance_of(Task))
+            .with(has_same_data(task))
 
     @client.post '/api/todo',
-                 { task: 'Write a test that fails' },
+                 { task: 'Write a test that fails' }.to_json,
                  { 'CONTENT_TYPE' => 'application/json' }
 
     expect(@client.last_response.status).to eq(201)

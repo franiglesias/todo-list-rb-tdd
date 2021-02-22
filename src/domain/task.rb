@@ -1,3 +1,8 @@
-class Task
+  class Task
+    attr_reader :description, :id
+    def initialize(id, description)
 
-end
+      @id = id
+      @description = description
+    end
+  end
