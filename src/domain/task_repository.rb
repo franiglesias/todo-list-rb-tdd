@@ -10,4 +10,8 @@ class TaskRepository
   def store(task)
     @storage.store task
   end
+
+  def find_all
+    @storage.find_all
+  end
 end

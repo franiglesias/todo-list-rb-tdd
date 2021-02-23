@@ -4,6 +4,12 @@ require_relative '../../src/domain/task_repository'
 require_relative '../../src/domain/task'
 require_relative '../../src/infrastructure/persistence/memory_storage'
 
+RSpec::Matchers.define :has_same_data do |expected|
+  match do |actual|
+    expected.id == actual.id && expected.description == actual.description
+  end
+end
+
 describe 'TaskRepository' do
   before() do
     memory_storage = MemoryStorage.new
@@ -27,10 +33,26 @@ describe 'TaskRepository' do
 
   it 'should add several tasks' do
 
-    @task_repository.store Task.new(@task_repository.next_id, 'Task Description')
-    @task_repository.store Task.new(@task_repository.next_id, 'Another Task')
-    @task_repository.store Task.new(@task_repository.next_id, 'Third Task')
+    @task_repository.store Task.new(1, 'Task Description')
+    @task_repository.store Task.new(2, 'Another Task')
+    @task_repository.store Task.new(3, 'Third Task')
 
     expect(@task_repository.next_id).to eq(4)
   end
+
+  it 'should find all tasks stored' do
+    examples = [
+      Task.new(1, 'Task Description'),
+      Task.new(2, 'Another Task'),
+      Task.new(3, 'Third Task')
+    ].each { |task| @task_repository.store task }
+
+    tasks = @task_repository.find_all
+
+    expect(tasks.count).to eq(3)
+    expect(tasks[1]).to eq(examples[0])
+    expect(tasks[2]).to eq(examples[1])
+    expect(tasks[3]).to eq(examples[2])
+  end
+
 end

@@ -10,4 +10,8 @@ class MemoryStorage
   def store(object)
     @objects.store object.id, object
   end
+
+  def find_all
+    @objects
+  end
 end
