@@ -14,4 +14,8 @@ class TaskRepository
   def find_all
     @storage.find_all
   end
+
+  def retrieve(task_id)
+    @storage.retrieve task_id
+  end
 end

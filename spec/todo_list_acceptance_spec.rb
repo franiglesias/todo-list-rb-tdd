@@ -9,8 +9,9 @@ require 'json'
 
 require_relative '../src/infrastructure/entry_point/todo_list_app'
 require_relative '../src/infrastructure/persistence/memory_storage'
-require_relative '../src/application/get_task_list_handler'
 require_relative '../src/application/add_task_handler'
+require_relative '../src/application/get_task_list_handler'
+require_relative '../src/application/mark_task_completed_handler'
 require_relative '../src/domain/task_repository'
 require_relative '../src/domain/task'
 
@@ -18,7 +19,9 @@ def todo_application
   @task_repository = TaskRepository.new MemoryStorage.new
   @add_task_handler = AddTaskHandler.new @task_repository
   @get_tasks_list_handler = GetTaskListHandler.new @task_repository
-  TodoListApp.new @add_task_handler, @get_tasks_list_handler, @task_repository
+  @mark_task_completed = MarkTaskCompletedHandler.new @task_repository
+
+  TodoListApp.new @add_task_handler, @get_tasks_list_handler, @mark_task_completed
 end
 
 def build_client
@@ -69,6 +72,26 @@ RSpec.describe 'As a user I want to' do
 
     expected_list = [
       '[ ] 1. Write a test that fails',
+      '[ ] 2. Write Production code that makes the test pass'
+    ]
+
+    expect(@client.last_response.body).to eq(expected_list.to_json)
+  end
+
+  it 'mark a task completed' do
+    api_post_task('Write a test that fails')
+    api_post_task('Write Production code that makes the test pass')
+
+    @client.patch '/api/todo/1',
+                  { completed: true }.to_json,
+                  { 'CONTENT_TYPE' => 'application/json' }
+
+    expect(@client.last_response.status).to eq(200)
+
+    api_get_tasks
+
+    expected_list = [
+      '[√] 1. Write a test that fails',
       '[ ] 2. Write Production code that makes the test pass'
     ]
 

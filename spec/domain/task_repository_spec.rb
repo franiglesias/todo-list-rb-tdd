@@ -4,11 +4,6 @@ require_relative '../../src/domain/task_repository'
 require_relative '../../src/domain/task'
 require_relative '../../src/infrastructure/persistence/memory_storage'
 
-RSpec::Matchers.define :has_same_data do |expected|
-  match do |actual|
-    expected.id == actual.id && expected.description == actual.description
-  end
-end
 
 describe 'TaskRepository' do
   before() do
@@ -55,4 +50,15 @@ describe 'TaskRepository' do
     expect(tasks[3]).to eq(examples[2])
   end
 
+  it 'should retrieve a task by id' do
+    examples = [
+      Task.new(1, 'Task Description'),
+      Task.new(2, 'Another Task'),
+      Task.new(3, 'Third Task')
+    ].each { |task| @task_repository.store task }
+
+    task = @task_repository.retrieve 1
+
+    expect(task).to eq(examples[0])
+  end
 end

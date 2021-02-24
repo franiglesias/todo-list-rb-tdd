@@ -14,4 +14,8 @@ class MemoryStorage
   def find_all
     @objects
   end
+
+  def retrieve(object_id)
+    @objects[object_id]
+  end
 end
